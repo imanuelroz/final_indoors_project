@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>Hotel Indoor Geolocation Demo</title>
+
+        <!--BOOSTRAP CSS-->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <!--STATIC CSS-->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/home_page.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+        <!--JavaScript-->
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+<script>
+    $(function() {
+        var selectedClass = "";
+        $(".filter").click(function(){
+            selectedClass = $(this).attr("data-rel");
+            $("#gallery").fadeTo(100, 0.1);
+            $("#gallery div").not("."+selectedClass).fadeOut().removeClass('animation');
+            setTimeout(function() {
+            $("."+selectedClass).fadeIn().addClass('animation');
+            $("#gallery").fadeTo(300, 1);
+            }, 300);
+        });
+    });
+</script>
+
+<nav class="site-header sticky-top py-1">
+    <div class="container d-flex flex-column flex-md-row justify-content-between">
+        <a class="py-2" href="{{ url_for('home') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="d-block mx-auto"><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></svg>
+        </a>
+        <a class="py-2 d-none d-md-inline-block" href="{{ url_for('home') }}">Home</a>
+        <!--a class="py-2 d-none d-md-inline-block" href="{{ url_for('load_data_visualization') }}">Data Visualization</a-->
+        <a class="py-2 d-none d-md-inline-block active" href="{{ url_for('loadDemo') }}">Demo</a>
+        <a class="py-2 d-none d-md-inline-block" href="{{ url_for('loadCrowdSourcing') }}">Contribute</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Contact</a>
+    </div>
+</nav>
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light text-center" style="height: 200px">
+    <h1 class="display-4 align-content-center">Demo</h1>
+    <h4 class="font-weight-normal" style=""> Upload an image or choose one from the gallery below</h4>
+</div>
+
+<container>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <dl>
+            <p align="center">
+                <input type="file" name="file" class="form-control" align="center" autocomplete="off" required>
+            </p>
+        </dl>
+        <p align="center">
+            <input type="submit" class="btn btn-primary" align="center" value="Upload Image">
+        </p>
+    </form>
+    {% if filename and folder %}
+	<div align="center">
+        <div class="col" align="center">
+            <img src="{{ url_for('display_image', folder=folder, filename=filename) }}" width="600px" align="center">
+		    <div class="row justify-content-center" align="center">
+                <div class="col-md-2">
+                <form method="post" action="/geolocation/{{folder}}/{{filename}}" style="margin-top:20px;">
+                    <p align="center">
+                        <input type="submit" class="btn btn-dark" align="center" value="Geolocate">
+                    </p>
+                </form>
+                </div>
+                <div class="col-md-2">
+                <form method="post" action="/visual_explanations/{{folder}}/{{filename}}" style="margin-top:20px;">
+                    <p align="center">
+                        <input type="submit" class="btn btn-dark" align="center" value="Visual Explanations">
+                    </p>
+                </form>
+                </div>
+                <div class="col-md-2">
+                <form method="post" action="/focused_caption/{{folder}}/{{filename}}" style="margin-top:20px;">
+                    <p align="center">
+                        <input type="submit" class="btn btn-dark" align="center" value="Focused Caption">
+                    </p>
+                </form>
+                </div>
+                <div class="col-md-2">
+                <form method="post" action="/caption/{{folder}}/{{filename}}" style="margin-top:20px;">
+                    <p align="center">
+                        <input type="submit" class="btn btn-dark" align="center" value="Caption">
+                    </p>
+                </form>
+                </div>
+            </div>
+            <div class="col justify-content-center" align="center" style="margin-top:10px;">
+                {%if geolocation%}
+                <div class="row" style="margin-top:25px;">
+                        <div class="col"><hr></div>
+                        <div class="col-auto">Geolocation Maps</div>
+                        <div class="col"><hr></div>
+                </div>
+                <div class="row mt-5">
+                <div class="col-md-2"></div>
+                <div class="col-md-8" id="mapid" style="height: 380px;">
+                    <style>
+                    img.huechange { filter: hue-rotate(240deg); }
+                    </style>
+                    <script>
+                        var mymap = L.map('mapid').setView([51.505, -0.09], 2);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                        maxZoom: 18,
+                        id: 'mapbox/streets-v11',
+                        tileSize: 512,
+                        zoomOffset: -1,
+                        accessToken: 'sk.eyJ1IjoidmlyZ2luaWFuZWdyaSIsImEiOiJja2Q5MGd6NXQyaGlrMzBudG5nOHdkdm04In0.yGGj1ot9byRQ6w2N_l2DoA'
+                    }).addTo(mymap);
+
+                        {% for i in range(0,(geolocation | length)) %}
+
+                            var marker = L.marker([{{geolocation[i][1]}}, {{geolocation[i][2]}}]).addTo(mymap);
+
+                            {% if i==0 %}
+                                marker.bindPopup("<b>{{geolocation[i][0]}}</b><br>{{geolocation[i][3]*100}}" + "%").openPopup();
+                                marker._icon.classList.add("huechange");
+                            {% else %}
+                                marker.bindPopup("<b>{{geolocation[i][0]}}</b><br>{{geolocation[i][3]*100}}" + "%");
+                            {%endif%}
+
+                        {%endfor%}
+
+                    </script>
+                </div>
+                <div class="col-md-2"></div>
+                </div>
+                <div class="row mt-5">
+                <div class="col-md-2"></div>
+                <div class="col-md-8" id="mapid2" style="height: 420px;">
+                    <script>
+
+                        var mymap = L.map('mapid2').setView([0, 0], 1);
+
+                        var info = L.control();
+
+                        info.onAdd = function (map) {
+                            this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+                            this.update();
+                            return this._div;
+                        };
+
+                        // method that we will use to update the control based on feature properties passed
+                        info.update = function (props) {
+                            this._div.innerHTML = '<h5>Country Classification</h5>' +  (props ?
+                                '<b>' + props.admin + '</b><br />' + props.prediction*100 + ' % </sup>'
+                                : 'Hover over a state');
+                        };
+
+                        info.addTo(mymap);
+
+                        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                            id: 'mapbox/light-v9',
+                            tileSize: 512,
+                            zoomOffset: -1,
+                            accessToken: 'sk.eyJ1IjoidmlyZ2luaWFuZWdyaSIsImEiOiJja2Q5MGd6NXQyaGlrMzBudG5nOHdkdm04In0.yGGj1ot9byRQ6w2N_l2DoA'
+
+                        }).addTo(mymap);
+
+                        function getColor(d) {
+                            return d > 0.9 ? '#800026' :
+                                   d > 0.75  ? '#BD0026' :
+                                   d > 0.5  ? '#E31A1C' :
+                                   d > 0.25  ? '#FC4E2A' :
+                                   d > 0.1   ? '#FD8D3C' :
+                                   d > 0.05   ? '#FEB24C' :
+                                   d > 0.01   ? '#FED976' :
+                                              '#FFEDA0';
+                        }
+
+                        function style(feature) {
+                            return {
+                                fillColor: getColor(feature.properties.prediction),
+                                weight: 2,
+                                opacity: 1,
+                                color: 'white',
+                                dashArray: '3',
+                                fillOpacity: 0.7
+                            };
+                        }
+
+                        function highlightFeature(e) {
+                            var layer = e.target;
+
+                            layer.setStyle({
+                                weight: 4,
+                                color: '#666',
+                                dashArray: '',
+                                fillOpacity: 0.7
+                            });
+
+                            layer.bringToFront();
+
+                            info.update(layer.feature.properties);
+                        }
+
+                        function resetStyle(e) {
+                            var layer = e.target;
+
+                            layer.setStyle({
+                                weight: 2,
+                                opacity: 1,
+                                color: 'white',
+                                dashArray: '3',
+                                fillOpacity: 0.7
+                            });
+                        }
+
+                        function resetHighlight(e) {
+                            resetStyle(e);
+                            info.update();
+                        }
+
+                        function zoomToFeature(e) {
+                            map.fitBounds(e.target.getBounds());
+                        }
+
+                        function onEachFeature(feature, layer) {
+                            layer.on({
+                                mouseover: highlightFeature,
+                                mouseout: resetHighlight,
+                                click: zoomToFeature
+                            });
+                        }
+
+                        $.getJSON("{{ url_for('static', filename='tmp/predictions.geojson') }}", function (data) {
+                            var geoJson = L.geoJSON(data,
+                                {
+                                    style: style,
+                                    onEachFeature: onEachFeature
+                                }).addTo(mymap);
+                        });
+
+
+                        var legend = L.control({position: 'bottomright'});
+
+                        legend.onAdd = function (map) {
+
+                            var div = L.DomUtil.create('div', 'info legend'),
+                                grades = [0, 0.01, 0.05, 0.1, 0.25, 0.50, 0.75, 0.90],
+                                labels = [];
+
+                            // loop through our density intervals and generate a label with a colored square for each interval
+                            for (var i = 0; i < grades.length; i++) {
+                                div.innerHTML +=
+                                    '<i style="background:' + getColor(grades[i]) + '"></i> ' +
+                                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                            }
+
+                            return div;
+                        };
+
+                        legend.addTo(mymap);
+
+
+
+
+
+                    </script>
+                </div>
+                <div class="col-md-2"></div>
+                </div>
+
+                <script type="text/javascript">
+                    google.charts.load("current", {packages:["corechart"]});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                      var data = google.visualization.arrayToDataTable([
+                        ["Subregion", "Probability (%)", { role: "style" } ],
+                        ["{{subregions[0][0]}}", {{subregions[0][1]}}*100, "#FF476E"],
+                        ["{{subregions[1][0]}}", {{subregions[1][1]}}*100, "#FF7161"],
+                        ["{{subregions[2][0]}}", {{subregions[2][1]}}*100, "#509CFF"],
+                        ["{{subregions[3][0]}}", {{subregions[3][1]}}*100, "#00C4FF"],
+                        ["{{subregions[4][0]}}", {{subregions[4][1]}}*100, "#01FFD0"]
+                      ]);
+
+                      var view = new google.visualization.DataView(data);
+                      view.setColumns([0, 1,
+                                       { calc: "stringify",
+                                         sourceColumn: 1,
+                                         type: "string",
+                                         role: "annotation" },
+                                       2]);
+
+                      var options = {
+                        title: "Subregion Classification (%)",
+                        width: 600,
+                        height: 400,
+                        bar: {groupWidth: "95%"},
+                        legend: { position: "none" },
+                      };
+                      var chart = new google.visualization.BarChart(document.getElementById("barchart_values"));
+                      chart.draw(view, options);
+  }
+  </script>
+<div id="barchart_values" style="width: 900px; height: 300px;"></div>
+
+                {%endif%}
+                {%if self_attentions%}
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col"><hr></div>
+                        <div class="col-auto">Self Attention Maps</div>
+                        <div class="col"><hr></div>
+                    </div>
+                        <div class="row justify-content-center" align="center">
+                            {% for i in range(0, self_attentions  | length) %}
+                            <div class="col-auto justify-content-center" align="center">
+                            <img class="img-fluid" src="{{url_for('static', filename=self_attentions[i], code=301)}}" width="400px" height="400px">
+                                <p>Self Attention {{i + 1}}</p>
+                            </div>
+                            {%endfor%}
+                        </div>
+                    {%endif%}
+                {%if detected_img%}
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col"><hr></div>
+                        <div class="col-auto">Detected Objects</div>
+                        <div class="col"><hr></div>
+                    </div>
+                    <div class="row" align="center">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-6">
+                            <img class="img-fluid" src="data:image/png;base64, {{ detected_img }}" align="center">
+                        </div>
+                        <div class="col-md-3"></div>
+                    </div>
+                {%endif%}
+                {% if captions %}
+                    <div class="row justify-content-center">
+                        <p>{{ captions[0] }}</p>
+                    </div>
+                    <div class="row justify-content-center">
+                        <p>{{ captions[1] }}</p>
+                    </div>
+                {% endif %}
+                <!-- Grid row -->
+                <div class="col">
+                    {%if attentions%}
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col"><hr></div>
+                        <div class="col-auto">Attention Maps</div>
+                        <div class="col"><hr></div>
+                    </div>
+                        {% for i in range(0,((attentions | length)/6)|int + 1) %}
+                            <div class="row" align="left">
+                                {% for j in range(0,6) %}
+                                    {%if (6*i + j) < (attentions | length)%}
+                                    <div class="col-md-2" align="left">
+                                    <img class="img-fluid" src="data:image/png;base64, {{ attentions[6*i + j] }}" width="200px" height="200px" alt="Card image cap">
+                                    </div>
+                                    {%endif%}
+                                {%endfor%}
+                            </div>
+                        {%endfor%}
+                    {%endif%}
+                </div>
+            </div>
+        </div>
+	</div>
+    {% endif %}
+</container>
+
+
+<!-- GALLERY -->
+<container>
+    <div class="row" style="margin-top:75px;">
+    <div class="col"><hr></div>
+    <div class="col-auto">Gallery</div>
+    <div class="col"><hr></div>
+</div>
+
+    <!-- Grid row -->
+    <div class="row">
+      <!-- Grid column -->
+      <div class="col-md-12 d-flex justify-content-center mb-5">
+        <button type="button" class="btn btn-outline-black waves-effect filter" data-rel="all">All</button>
+        <button type="button" class="btn btn-outline-black waves-effect filter" data-rel="1">Hotels</button>
+        <button type="button" class="btn btn-outline-black waves-effect filter" data-rel="2">Airbnbs</button>
+      </div>
+      <!-- Grid column -->
+    </div>
+    <!-- Grid row -->
+
+    <!-- Grid row -->
+    <div class="gallery" id="gallery">
+
+        {% for item in items%}
+        <div class="mb-3 pics animation all {{1 if item.split('/')[0]=='hotel50k' else 2}}">
+            <img class="img-fluid" src="{{ url_for('static', filename=item) }}" onclick="window.location.href='{{ url_for('img_click', folder=item.split('/')[0], filename=item.split('/')[1]) }}';" alt="Card image cap">
+        </div>
+        {%endfor%}
+
+    </div>
+<!-- Grid row -->
+</container>
+</body>
+
+</html>
