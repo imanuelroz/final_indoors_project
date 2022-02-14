@@ -17,8 +17,8 @@ class SwinTransformerFineTuningADE20k(
     def __init__(self, subregion_classes=12, location_classes=100,
                  country_classes=32, device_pretrained=None):  #chain_classes=94
         super().__init__()
-        self.lr = 1e-6
-        self.p_dropout = 0.5 #poi rimetti a 0.5
+        self.lr = 1e-4 #prima era 1e-6
+        self.p_dropout = 0.1 #poi rimetti a 0.5
         self.save_hyperparameters()
         self.pretrained = self._load_model().to(device_pretrained)
 
@@ -29,7 +29,7 @@ class SwinTransformerFineTuningADE20k(
         self.location_classes = location_classes
         self.dropout = nn.Dropout(self.p_dropout)
         self.finetuner = nn.Sequential(
-            nn.Linear(37632, 1000),
+            nn.Linear(37632, 1000),  #prima tutto a 1000
             nn.ReLU(),
             nn.Linear(1000, 1000),
         )
@@ -87,13 +87,14 @@ class SwinTransformerFineTuningADE20k(
 
 
     def forward_ig(self, x):
-        swin_output = self.pretrained(x)
+        swin_output = self.pretrained(x)[-1]
         swin_output = self.dropout(swin_output)
+        swin_output = swin_output.flatten(1)
         output = self.finetuner(swin_output)
         #chain_hat = self.chain_predictor(output)
         subregion_hat = self.subregion_predictor(output)
         country_hat = self.country_predictor(output)
-        location_hat = self.location_predictor(swin_output)
+        location_hat = self.location_predictor(output)
         #location_hat = self.location_predictor(output) #se ci metti swin_output invece di output non ci mette gli hidden layers
         return dict(subregion_hat=subregion_hat, country_hat=country_hat, location_hat=location_hat) #,chain_hat=chain_hat,
 

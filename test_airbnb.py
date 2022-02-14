@@ -4,7 +4,8 @@ import torch
 import yaml
 from path import Path
 from torch.utils.data import DataLoader
-from models.airbnb_swintransformer import SwinTransformerFineTuning
+#from models.airbnb_swintransformer import SwinTransformerFineTuning
+from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
 from models.vgg19 import Vgg_19_FineTuning
 from datasets.airbnb import Airbnbimages
 import pytorch_lightning as pl
@@ -24,7 +25,8 @@ def main():
     batch_size = 16  # metti 16 poi
     # test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, sampler=test_dataset_sampler) #poi rimetti shuffle True
     test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
-    model = SwinTransformerFineTuning.load_from_checkpoint(args.run_path)
+    #model = SwinTransformerFineTuning.load_from_checkpoint(args.run_path)
+    model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
     #model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)  # statt accuort ha da fa aaccussi senno vedi linea 34
     trainer = pl.Trainer(precision=16, default_root_dir=args.run_path.parent,
                          max_epochs=10, accelerator='gpu', devices=1, max_steps=100)
@@ -47,7 +49,7 @@ def main():
         yaml.safe_dump(results, f)
 
 
-if __name__ == '__main__':  # __name__ è una variabile speciale che di solito contiene il nome del file
-    main()  # in questo caso contiene __main__ che è il punto di partenza
+if __name__ == '__main__':
+    main()
 
 # se fai il test con metriche computate su vecchi modelli togli dropout da forward

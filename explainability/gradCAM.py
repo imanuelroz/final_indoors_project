@@ -4,6 +4,7 @@ from pytorch_grad_cam import GradCAMPlusPlus, GradCAM, FullGrad
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 from models.swintransformer import SwinTransformerFineTuning
 from models.airbnb_swintransformer import SwinTransformerFineTuning
+from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
 from pretrained_models.swin_transformer.models import swin_transformer
 from datasets.hotel50k import Hotelimages
 import cv2
@@ -23,7 +24,7 @@ def reshape_transform(tensor, height=7, width=7):
     return result
 
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt').eval()# device_pretrained='cpu')
+model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swindade20k/1/model_val_epoch_loss=6.20.ckpt').eval()# device_pretrained='cpu')
 original_forward = model.forward_ig
 
 def forward_wrapper(x):
@@ -34,8 +35,8 @@ model.forward=forward_wrapper
 target_layer = [model.subregion_predictor]# model.country_predictor, model.city_predictor]
 cam = FullGrad(model=model, target_layers=target_layer)# reshape_transform=reshape_transform)
 #rgb_img = cv2.imread(IMG_DIR/"expedia/51098/6969621.jpg")[:, :, ::-1]
-rgb_img = cv2.imread(AIRBNB_IMG_DIR/"rome/rome_678.jpg")[:, :, ::-1] #decommenta, ho commentato solo per fare inferenza su immagine segmentata
-#rgb_img = cv2.imread("/hdd2/airbnb_geolocation_weights/segmented.jpeg")
+#rgb_img = cv2.imread(AIRBNB_IMG_DIR/"porto/porto_152.jpg")[:, :, ::-1] #decommenta, ho commentato solo per fare inferenza su immagine segmentata
+rgb_img = cv2.imread("/hdd2/airbnb_geolocation_weights/segmented.jpeg")
 rgb_img = cv2.resize(rgb_img, (224, 224))
 rgb_img = np.float32(rgb_img) / 255
 plt.imshow(rgb_img)
@@ -55,6 +56,6 @@ cam_image = show_cam_on_image(rgb_img, grayscale_cam)
 directory = Path('/home/rozenberg/indoors_geolocation_pycharm/gradCAM_images')
 os.chdir(directory)
 cv2.imwrite('save_img.jpg', cam_image)
-plt.imshow(grayscale_cam, alpha=0.7, cmap='plasma') #senza cmap è più tradizionale come visual
+plt.imshow(grayscale_cam, alpha=0.5, cmap='plasma') #senza cmap è più tradizionale come visual
 plt.show()
 

@@ -1,4 +1,6 @@
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
+
+from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
 from models.swintransformer import SwinTransformerFineTuning
 from models.airbnb_swintransformer import SwinTransformerFineTuning
 from pretrained_models.swin_transformer.models import swin_transformer
@@ -25,7 +27,8 @@ data = Airbnbimages('test')
 #dataset = Hotelimages('test')
 dl = DataLoader(data, batch_size=16) #al posto di dl metti img=dataset[0], togli sample = next..., ind = 0 non serve più
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/2/model_val_epoch_loss=10.04.ckpt',device_pretrained='cpu')
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt', device_pretrained='cpu')
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt', device_pretrained='cpu')
+model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swindade20k/1/model_val_epoch_loss=6.20.ckpt', device_pretrained='cpu').eval()
 #target_layer = [model.subregion_predictor, model.country_predictor, model.city_predictor]
 target_airbnb_layer = [model.subregion_predictor, model.country_predictor, model.location_predictor]
 

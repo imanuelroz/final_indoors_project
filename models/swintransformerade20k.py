@@ -17,8 +17,8 @@ class SwinTransformerFineTuningADE20k(
     def __init__(self, subregion_classes=23, city_classes=10458,
                  country_classes=183, device_pretrained=None):  #chain_classes=94
         super().__init__()
-        self.lr = 1e-6
-        self.p_dropout = 0.1 #poi rimetti a 0.5
+        self.lr = 1e-4
+        self.p_dropout = 0.2 #poi rimetti a 0.5
         self.save_hyperparameters()
         self.pretrained = self._load_model().to(device_pretrained)
         self.pretrained.eval()
@@ -134,7 +134,7 @@ class SwinTransformerFineTuningADE20k(
         self.log('train/batch_loss', outputs['loss'].item(), on_step=True) #prog_bar=True
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), self.lr)
+        return torch.optim.Adam(self.parameters(), self.lr) #lr = self.learning_rate
 
     def validation_step(self, batch, batch_idx):
         x = batch['image']

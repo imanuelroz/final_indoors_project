@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 
 #root = Path(__file__).parent #__file__ mi da il percorso del file (mentre __name__ mi da il nome del file)
 root = Path('/hdd2/indoors_geolocation_weights')
-run_folder = root/'swinADE20k/find_best_lr' #swin_without_city
+run_folder = root/'swinADE20k/auto_lr_rate' #swin_without_city
 if not run_folder.exists():
-    run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
+    run_folder.mkdir()
 
 def get_experiment_folder():
     i = 0
@@ -28,24 +28,21 @@ def get_experiment_folder():
 def main():
     seed_everything(seed=13)
     exp_folder = get_experiment_folder()
-    train_dataset = Hotelimages(split='train') #prima c'era shuffle = True, mettilo se non metti il dataloader bilanciato
-    #city_freq = train_dataset.dataset.city_id.value_counts() #city sampler
+    train_dataset = Hotelimages(split='train')
     target_list = []
     for t in train_dataset.dataset.country_id:
         target_list.append(t)
     target_list = torch.tensor(target_list).long()
     target_list = target_list[torch.randperm(len(target_list))]
-    city_classes = 10458
     country_classes = 183
     c, _ = np.histogram(target_list.numpy(), bins=np.arange(0, country_classes + 1)) #put bins instead of _ if you want the plot
     #_ = plt.hist(target_list.numpy(), bins)
     #plt.show()
-    #city_freq = np.asarray(city_freq.tolist())
     weights = torch.tensor(np.true_divide(c, np.sum(c))) #perchè sum e non len
     class_weights_all = weights[target_list]
     #weights = train_dataset.dataset.subregion_id.apply(lambda x: 1/subregion_freq[x]).tolist()
     valid_dataset = Hotelimages(split='valid')
-    batch_size = 16 #metti 16 poi
+    batch_size = 16
     train_dataset_sampler = torch.utils.data.WeightedRandomSampler(weights=class_weights_all, num_samples=len(train_dataset),
                                                                    replacement=False) #prima era train_dataset il primo argomento
     train_dl = DataLoader(train_dataset, batch_size=batch_size, shuffle=False, sampler=train_dataset_sampler)
@@ -58,19 +55,17 @@ def main():
                                        filename='model_{val_epoch_loss:.2f}', save_weights_only=False, every_n_epochs=1)
     model_es = EarlyStopping(monitor="val_epoch_loss")
     trainer = pl.Trainer(precision=16, default_root_dir=exp_folder, callbacks=[model_checkpoint, model_es],
-                         max_epochs=100, accelerator='gpu', devices=1) #add model_es inside callbacks
-
-    lr_finder = trainer.tuner.lr_find(model, train_dl, valid_dl, update_attr=True, early_stop_threshold=None, max_lr= 0.01)
+                         max_epochs=10, accelerator='gpu', devices=1, auto_lr_find=False) #add model_es inside callbacks
+    lr_finder = trainer.tuner.lr_find(model, train_dl, valid_dl, update_attr=True)
     print(lr_finder.results)
     fig = lr_finder.plot(suggest=True)
     fig.show()
     new_lr = lr_finder.suggestion()
     model.hparams.lr = new_lr
     print(f'Auto-find model LR: {model.hparams.lr}')
-
     trainer.fit(model, train_dl, valid_dl)
-    #new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'3/model_val_epoch_loss=9.72.ckpt')
-    #trainer.fit(new_model, train_dl, valid_dl)
+
+
+
 if __name__ == '__main__':    #__name__ è una variabile speciale che di solito contiene il nome del file
      main()                         # in questo caso contiene __main__ che è il punto di partenza
-
