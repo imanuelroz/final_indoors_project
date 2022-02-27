@@ -43,7 +43,46 @@ img_orig = image.img_to_array(img)
 
 sgm_dict = torch.load('/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/2940274.pth')
 sgm_img_rgb = sgm_dict[1]
-print(sgm_img_rgb)
+#print(type(sgm_img_rgb))
+
+
+class_colors = sgm_dict[0]['class_colors']
+print(class_colors)
+
+def getSector(pixel, class_colors):
+    for i in range(len(class_colors)):
+        tmp = np.array_equal(pixel, class_colors[i])
+        #print(tmp)
+        if tmp:
+            #print("the index is: ", i)
+            return i
+    return -1
+
+def parse_segmetnation(img):
+    class_colors = img[0]['class_colors']
+
+    for i in range(len(class_colors)):
+        tmp = class_colors[i][2]
+        class_colors[i][2] = class_colors[i][0]
+        class_colors[i][0] = tmp
+    #print(class_colors)
+
+    img_seg = img[1]
+    row = len(img_seg)
+    col = len(img_seg[0])
+
+
+    segmentation = np.empty((224,224),int)
+    for i in range(row):
+        for j in range(col):
+            segmentation[i][j] = getSector(img_seg[i][j], class_colors)
+    return segmentation
+
+
+slic_style_mask = parse_segmetnation(sgm_dict)
+#print(parse_segmetnation(sgm_dict))
+
+
 sgm_img = torch.zeros(sgm_img_rgb.shape[0], sgm_img_rgb.shape[1])
 plt.imshow(sgm_img_rgb)
 plt.show()
@@ -57,9 +96,9 @@ for i in range(sgm_img_rgb.shape[0]):
                 print('Match', i_class)
                 sgm_img[i, j] = i_class #y_class
                 break
-print(sgm_img.max(), sgm_img.mean(), sgm_img.std())
-print(img_orig.shape)
-print(sgm_img_rgb.shape, 'shape di img_rgb')
+#print(sgm_img.max(), sgm_img.mean(), sgm_img.std())
+#print(img_orig.shape)
+#print(sgm_img_rgb.shape, 'shape di img_rgb')
 plt.imshow(sgm_img_rgb)
 plt.show()
 plt.imshow(sgm_img)
@@ -88,7 +127,7 @@ def mask_image(zs, segmentation, image, background=None):
 
 @torch.no_grad() #per non tenere in memoria tutti ir isultati intermedi dei layer
 def f(z):
-    prediction = model(mask_image(z, sgm_img, img_orig, 255))['country_hat'].softmax(dim=-1)
+    prediction = model(mask_image(z, slic_style_mask, img_orig, 255))['country_hat'].softmax(dim=-1) #sgm_img anziche slic_style_mask
     #print(prediction)
     return prediction.numpy()
     #return {country_ids.loc[i, 'Country']: float(prediction[0, i]) for i in range(len(country_ids))}
@@ -101,14 +140,14 @@ def fill_segmentation(values, segmentation):
 
 
 
-masked_images = mask_image(torch.zeros((1, num_classes)), sgm_img, img_orig, 255)  #vedi bene questo 1000
+masked_images = mask_image(torch.zeros((1, num_classes)), slic_style_mask, img_orig, 255)  #metti sgm_img anziche slic_style ...vedi bene questo 1000
 print(masked_images.shape)
 
 plt.imshow(masked_images[0][0, :, :])
 plt.axis('off')
 plt.show()
 
-prediction = model((mask_image(torch.zeros(1, num_classes), sgm_img, img_orig, 255)))['country_hat'].softmax(dim=-1)
+prediction = model((mask_image(torch.zeros(1, num_classes), slic_style_mask, img_orig, 255)))['country_hat'].softmax(dim=-1)
 print(prediction)
 
 

@@ -17,7 +17,7 @@ class SwinTransformerFineTuningADE20k(
     def __init__(self, subregion_classes=23, city_classes=10458,
                  country_classes=183, device_pretrained=None):  #chain_classes=94
         super().__init__()
-        self.lr = 1e-4
+        self.lr = 1e-5
         self.p_dropout = 0.2 #poi rimetti a 0.5
         self.save_hyperparameters()
         self.pretrained = self._load_model().to(device_pretrained)
@@ -64,7 +64,7 @@ class SwinTransformerFineTuningADE20k(
         model = SwinTransformer(**config)
         checkpoint = torch.load(
             '/home/rozenberg/indoors_geolocation_pycharm/pretrained_models/upernet_swin_tiny_patch4_window7_512x512.pth')
-        #print(checkpoint['state_dict'].keys())
+        print(checkpoint['state_dict'].keys())
         checkpoint_backbone = {k.replace('backbone.', ''): v for k, v in checkpoint['state_dict'].items() if
                                k.startswith('backbone')}
         model.load_state_dict(checkpoint_backbone)

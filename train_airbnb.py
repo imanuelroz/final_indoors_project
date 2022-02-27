@@ -39,7 +39,7 @@ def main():
     trainer = pl.Trainer(precision=16, default_root_dir=exp_folder, callbacks=[model_checkpoint, model_es],
                          max_epochs=80, accelerator='gpu', devices=1) #add model_es inside callbacks
 
-    lr_finder = trainer.tuner.lr_find(model, train_dl, valid_dl, update_attr=True, early_stop_threshold=None, max_lr= 0.01)
+    lr_finder = trainer.tuner.lr_find(model, train_dl, valid_dl, update_attr=True, early_stop_threshold=None, max_lr= 0.1)
     print(lr_finder.results)
     fig = lr_finder.plot(suggest=True)
     fig.show()

@@ -3,6 +3,7 @@ from path import Path
 from torch.utils.data import DataLoader
 from models.swintransformer import SwinTransformerFineTuning
 from models.swintransformerade20k import SwinTransformerFineTuningADE20k
+from models.swin_b import Swin_b_TransformerFineTuning
 from datasets.hotel50k import Hotelimages
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 
 #root = Path(__file__).parent #__file__ mi da il percorso del file (mentre __name__ mi da il nome del file)
 root = Path('/hdd2/indoors_geolocation_weights')
-run_folder = root/'swinADE20k/find_best_lr' #swin_without_city
+run_folder = root/'swin_b' #swin_without_city
 if not run_folder.exists():
     run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
 
@@ -52,8 +53,9 @@ def main():
     #valid_dataset_sampler = torch.utils.data.RandomSampler(valid_dataset, replacement=False) #metti dentro anche num_samples=1600 e replacement=True
     #valid_dl = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, sampler=valid_dataset_sampler)
     valid_dl = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
-    #model = SwinTransformerFineTuning()
-    model = SwinTransformerFineTuningADE20k()
+    model = SwinTransformerFineTuning()
+    #model = SwinTransformerFineTuningADE20k()
+    #model = Swin_b_TransformerFineTuning()
     model_checkpoint = ModelCheckpoint(exp_folder, monitor="val_epoch_loss", save_last=True, save_top_k=2,
                                        filename='model_{val_epoch_loss:.2f}', save_weights_only=False, every_n_epochs=1)
     model_es = EarlyStopping(monitor="val_epoch_loss")
