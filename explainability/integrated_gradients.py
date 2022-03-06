@@ -23,7 +23,7 @@ ROOT_AIRBNB_DIR = Path('/hdd2/past_students/virginia/airbnb/')
 AIRBNB_IMG_DIR = ROOT_AIRBNB_DIR / "images"
 
 
-data = Airbnbimages('test')
+data = Airbnbimages('train')
 #dataset = Hotelimages('test')
 dl = DataLoader(data, batch_size=16) #al posto di dl metti img=dataset[0], togli sample = next..., ind = 0 non serve più
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/2/model_val_epoch_loss=10.04.ckpt',device_pretrained='cpu')
@@ -34,7 +34,7 @@ target_airbnb_layer = [model.subregion_predictor, model.country_predictor, model
 
 #sample = next(iter(dl)) #next fa iterazioni su iter iteratore
 #sample = dataset[289]
-index = data.dataset.index[data.dataset['image_id'] == 'rome_678'][0]
+index = data.dataset.index[data.dataset['image_id'] == 'rome_419'][0]
 sample = data[index]
 
 ind = 0
@@ -68,5 +68,5 @@ fig_orig, axes_orig = viz.visualize_image_attr(None, original_image,
 
 fig_ig, axes_ig = viz.visualize_image_attr(attr_ig, original_image, method="blended_heat_map", sign="all",
                          show_colorbar=True, title="Overlayed Integrated Gradients")
-fig_orig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/original_airbnb_porto_152.png')
-fig_ig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/ig_airbnb_subregion_saliency_porto_152.png')
+fig_orig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/original_airbnb_rome_419.png')
+fig_ig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/ig_airbnb_country_saliency_rome_419.png')

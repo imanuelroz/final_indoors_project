@@ -7,6 +7,7 @@ from sklearn.feature_selection.tests.test_base import feature_names
 from torchvision import transforms
 from pretrained_models.swin_transformer.models import swin_transformer
 from models.swintransformer import SwinTransformerFineTuning
+from models.airbnb_swintransformer import SwinTransformerFineTuning
 #from models.airbnb_swintransformer import SwinTransformerFineTuning
 from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
 from datasets.hotel50k import Hotelimages
@@ -22,26 +23,40 @@ import numpy as np
 import pandas as pd
 import shap
 import warnings
+import indoor_segmentation as inS
 # load model data
 
 root = Path('/hdd2/indoors_geolocation_weights')
-run_folder = root / 'run'
-ROOT_DIR = Path('/hdd2/past_students/virginia/hotel')
+#run_folder = root / 'run'
+#ROOT_DIR = Path('/hdd2/past_students/virginia/hotel')
+#IMG_DIR = ROOT_DIR / "images"
+
+
+
+ROOT_DIR = Path('/hdd2/past_students/virginia/airbnb/')
 IMG_DIR = ROOT_DIR / "images"
-
-#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swindade20k/1/model_val_epoch_loss=6.20.ckpt').eval()
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
-#model.eval()
+AIRBNB_DATA_DIR = ROOT_DIR / "airbnb_data"
+LOCAL_DATA_DIR = Path(__file__).parent.parent/'data'
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt').eval()
+model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/19/model_val_epoch_loss=6.05.ckpt').eval()
+#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.63.ckpt').eval()
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
+#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/indoors_geolocation_weights/swinADE20k/4/model_val_epoch_loss=9.53.ckpt').eval()
 # Download human-readable labels for ImageNet.
-country_ids = pd.read_csv('/hdd2/past_students/virginia/hotel/data/country_ids.csv', index_col='country_id')
 
-
-img = image.load_img(ROOT_DIR/"images/expedia/1160/2940274.jpg", target_size=(224, 224))
+location_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/location_id.csv', index_col='Id')
+#location_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/location_id.csv', index_col='location_id')
+img = image.load_img(ROOT_DIR/"images/sicily/sicily_416.jpg", target_size=(224, 224))
 img_orig = image.img_to_array(img)
+
+
+#img = image.load_img(ROOT_DIR/"images/expedia/1160/2940274.jpg", target_size=(224, 224))
+#img_orig = image.img_to_array(img)
 #sgm = image.load_img("/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/2940274.jpg", target_size=(224, 224))
 #sgm_img = image.img_to_array(sgm)
 
-sgm_dict = torch.load('/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/2940274.pth')
+#sgm_dict = torch.load('/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/2940274.pth')
+sgm_dict = inS.modelSegmentation(0, "sicily", 416)
 sgm_img_rgb = sgm_dict[1]
 #print(type(sgm_img_rgb))
 
@@ -84,8 +99,8 @@ slic_style_mask = parse_segmetnation(sgm_dict)
 
 
 sgm_img = torch.zeros(sgm_img_rgb.shape[0], sgm_img_rgb.shape[1])
-plt.imshow(sgm_img_rgb)
-plt.show()
+#plt.imshow(sgm_img_rgb)
+#plt.show()
 print(sgm_dict[0]['masks'].shape)
 for i in range(sgm_img_rgb.shape[0]):
     for j in range(sgm_img_rgb.shape[1]):
@@ -127,10 +142,10 @@ def mask_image(zs, segmentation, image, background=None):
 
 @torch.no_grad() #per non tenere in memoria tutti ir isultati intermedi dei layer
 def f(z):
-    prediction = model(mask_image(z, slic_style_mask, img_orig, 255))['country_hat'].softmax(dim=-1) #sgm_img anziche slic_style_mask
+    prediction = model(mask_image(z, slic_style_mask, img_orig, 255))['location_hat'].softmax(dim=-1) #sgm_img anziche slic_style_mask
     #print(prediction)
     return prediction.numpy()
-    #return {country_ids.loc[i, 'Country']: float(prediction[0, i]) for i in range(len(country_ids))}
+    #return {location_ids.loc[i, 'location']: float(prediction[0, i]) for i in range(len(location_ids))}
 
 def fill_segmentation(values, segmentation):
     out = np.zeros(segmentation.shape)
@@ -140,14 +155,14 @@ def fill_segmentation(values, segmentation):
 
 
 
-masked_images = mask_image(torch.zeros((1, num_classes)), slic_style_mask, img_orig, 255)  #metti sgm_img anziche slic_style ...vedi bene questo 1000
+masked_images = mask_image(torch.zeros((1, num_classes)), slic_style_mask, img_orig, 255)
 print(masked_images.shape)
 
 plt.imshow(masked_images[0][0, :, :])
 plt.axis('off')
 plt.show()
 
-prediction = model((mask_image(torch.zeros(1, num_classes), slic_style_mask, img_orig, 255)))['country_hat'].softmax(dim=-1)
+prediction = model((mask_image(torch.zeros(1, num_classes), slic_style_mask, img_orig, 255)))['location_hat'].softmax(dim=-1)
 print(prediction)
 
 
@@ -162,7 +177,7 @@ with warnings.catch_warnings():
 img_orig_pytorch = torch.from_numpy(img_orig).unsqueeze(0)
 img_orig_pytorch = img_orig_pytorch.permute(0, 3, 1, 2)
 with torch.no_grad():
-    preds = model(img_orig_pytorch)['country_hat'].softmax(dim=-1)
+    preds = model(img_orig_pytorch)['location_hat'].softmax(dim=-1)
 top_preds = np.argsort(-preds)
 inds = top_preds[0]
 #top_10_pred = pd.Series(data={feature_names[str(inds[i])][1]:preds[0, inds[i]] for i in range(10)})
@@ -179,12 +194,13 @@ axes[0].axis('off')
 max_val = np.max([np.max(np.abs(shap_values[i][:, :-1])) for i in range(len(shap_values))])
 for i in range(3):
     m = fill_segmentation(shap_values[inds[i]][0], sgm_img)
-    print(country_ids)
-    print(country_ids.loc[inds[i].item(), 'country'])
-    axes[i+1].set_title(country_ids.loc[inds[i].item(), 'country'])
+    print(location_ids)
+    print(location_ids.loc[inds[i].item(), 'Location'])
+    axes[i+1].set_title(location_ids.loc[inds[i].item(), 'Location'])
     axes[i+1].imshow(np.array(img.convert('LA'))[:, :, 0], alpha=0.15)
     im = axes[i+1].imshow(m, cmap='viridis', vmin=-max_val, vmax=max_val)
     axes[i+1].axis('off')
 cb = fig.colorbar(im, ax=axes.ravel().tolist(), label="SHAP value", orientation="horizontal", aspect=60)
 cb.outline.set_visible(False)
 plt.show()
+#plt.savefig('Immagine_da_usare.jpg', dpi = 200)
