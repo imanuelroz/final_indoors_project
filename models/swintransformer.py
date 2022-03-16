@@ -15,15 +15,15 @@ class SwinTransformerFineTuning(
     def __init__(self, chain_classes=94, subregion_classes=23, city_classes=10458,
                  country_classes=183, device_pretrained=None):  # 22,8948,160 struttura del modello
         super().__init__()
-        self.lr = 1e-6
-        self.p_dropout = 0.1 #poi rimetti a 0.5
+        self.lr = 1e-4 #prova con 1e-6
+        self.p_dropout = 0.5 #poi rimetti a 0.5
         self.save_hyperparameters()
-        with open('pretrained_models/swin_transformer/configs/swin_base_patch4_window7_224.yaml') as f:
+        with open('../pretrained_models/swin_transformer/configs/swin_base_patch4_window7_224.yaml') as f:
             model_config = yaml.safe_load(f)
             model_config = model_config['MODEL']['SWIN']
             model_config = {k.lower(): v for k, v in model_config.items()}
         self.pretrained = swin_transformer.SwinTransformer(**model_config, num_classes=21841)
-        self.pretrained_path = 'pretrained_models/swin_base_patch4_window7_224_22k.pth'
+        self.pretrained_path = '../pretrained_models/swin_base_patch4_window7_224_22k.pth'
         self.pretrained.load_state_dict(torch.load(self.pretrained_path, device_pretrained)[
                                             'model']) #se vuoi usare per ig, metti 'cpu' al posto di device pretrained, load me lo carica come un dizionario e poi con load_state_dict lo applico al modello pretrained
         self.pretrained.eval()

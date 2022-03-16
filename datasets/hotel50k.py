@@ -17,9 +17,9 @@ LOCAL_DATA_DIR = Path(__file__).parent.parent/'data'
 class Hotelimages(Dataset):
     def __init__(self, split: str):
         assert split in ['train', 'valid', 'test'], split  # così se è un errore mi stampa il valore di split sbagliato
-        self.split_ids = pd.read_csv(DATA_DIR / f'{split}.csv')  # f'{}' fa l' interpolazione di stringhe
-        self.hotel_info = pd.read_csv(DATA_DIR / 'hotel_info.csv')
-        self.images_path = pd.read_csv(DATA_DIR / 'images_path.csv')    #toglilo rimesso solo per converto to rgb
+        self.split_ids = pd.read_csv(DATA_DIR / f'{split}.csv', delimiter=',', names=['image_id', 'hotel_id'], header=0)  #ho aggiunto: delimiter, names e header ma comunque non va
+        self.hotel_info = pd.read_csv(DATA_DIR / 'hotel_info.csv', delimiter=',', names=['hotel_id', 'chain_id', 'lat', 'long', 'country_id', 'city_id', 'subregion_id'], header=0)
+        self.images_path = pd.read_csv(DATA_DIR / 'images_path.csv', delimiter=',', names=['image_id', 'path'], header=0)    #toglilo rimesso solo per converto to rgb
         #self.images_path = pd.read_csv(LOCAL_DATA_DIR / 'images_path_rgb_only.csv')
         self.dataset = pd.merge(self.split_ids, self.hotel_info, on='hotel_id')
         self.dataset = pd.merge(self.dataset, self.images_path, on='image_id')
@@ -29,7 +29,7 @@ class Hotelimages(Dataset):
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),   #poi togli il commento ricordati
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
         print(self.dataset.columns.tolist())
         print(self.dataset.head())

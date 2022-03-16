@@ -32,7 +32,8 @@ def main():
     train_dl = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) #metti shuffle=False, sampler=train_dataset_sampler
     #valid_dataset_sampler = torch.utils.data.RandomSampler(valid_dataset, num_samples=1600, replacement=True)
     valid_dl = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False) # shuffle=False, sampler=valid_dataset_sampler
-    model = SwinTransformerFineTuningADE20k()
+    #model = SwinTransformerFineTuningADE20k()
+    model = SwinTransformerFineTuning()
     model_checkpoint = ModelCheckpoint(exp_folder, monitor="val_epoch_loss", save_last=True, save_top_k=2,
                                        filename='model_{val_epoch_loss:.2f}', save_weights_only=False, every_n_epochs=2)
     model_es = EarlyStopping(monitor="val_epoch_loss")

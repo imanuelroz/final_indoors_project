@@ -40,12 +40,15 @@ def main():
     results = dict(city_top_1_accuracy=model.test_avg_top_1_accuracy_city.compute().item(),
                    subregion_top_1_accuracy=model.test_avg_top_1_accuracy_subregion.compute().item(),
                    country_top_1_accuracy=model.test_avg_top_1_accuracy_country.compute().item(),
+                   chain_top_1_accuracy=model.test_avg_top_1_accuracy_chain.compute().item(),
                    city_top_5_accuracy=model.test_avg_top_5_accuracy_city.compute().item(),
                    subregion_top_5_accuracy=model.test_avg_top_5_accuracy_subregion.compute().item(),
                    country_top_5_accuracy=model.test_avg_top_5_accuracy_country.compute().item(),
+                   chain_top_5_accuracy=model.test_avg_top_5_accuracy_chain.compute().item(),
                    city_top_10_accuracy=model.test_avg_top_10_accuracy_city.compute().item(),
                    subregion_top_10_accuracy=model.test_avg_top_10_accuracy_subregion.compute().item(),
-                   country_top_10_accuracy=model.test_avg_top_10_accuracy_country.compute().item()
+                   country_top_10_accuracy=model.test_avg_top_10_accuracy_country.compute().item(),
+                   chain_top_10_accuracy=model.test_avg_top_10_accuracy_chain.compute().item(),
                    )
     print(results)
     with open(args.run_path + '_accuracy.yaml', 'w') as f:

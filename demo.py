@@ -49,4 +49,4 @@ def classify_image(inp):
 image = gr.inputs.Image(shape=(224, 224))
 label = gr.outputs.Label(num_top_classes=10)
 
-gr.Interface(fn=classify_image, inputs=image, outputs=label, interpretation='default').launch(share=True)
+gr.Interface(fn=classify_image, inputs=image, outputs=label, interpretation='shap').launch(share=True)
