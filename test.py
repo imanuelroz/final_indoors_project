@@ -6,8 +6,10 @@ from path import Path
 from torch.utils.data import DataLoader
 
 from models.efficientnet_b0 import EfficientNet_FineTuning
+from models.swin_t import Swin_t_TransformerFineTuning
 from models.swintransformer import SwinTransformerFineTuning
 from models.swintransformerade20k import SwinTransformerFineTuningADE20k
+from models.swin_b import Swin_b_TransformerFineTuning
 from models.vgg19 import Vgg_19_FineTuning
 from datasets.hotel50k import Hotelimages
 import pytorch_lightning as pl
@@ -28,9 +30,11 @@ def main():
     # test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, sampler=test_dataset_sampler) #poi rimetti shuffle True
     test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     #model = SwinTransformerFineTuning.load_from_checkpoint(args.run_path)
+    #model = Swin_b_TransformerFineTuning.load_from_checkpoint(args.run_path)
+    model = Swin_t_TransformerFineTuning.load_from_checkpoint(args.run_path)
     #model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)  # statt accuort ha da fa aaccussi senno vedi linea 34
     #model = EfficientNet_FineTuning.load_from_checkpoint(args.run_path)
-    model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
+    #model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
     trainer = pl.Trainer(precision=16, default_root_dir=args.run_path.parent,
                          max_epochs=10, accelerator='gpu', devices=1, max_steps=100)
     # model.load_from_checkpoint(args.run_path)

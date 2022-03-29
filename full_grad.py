@@ -1,9 +1,12 @@
 import torch
 import torchvision.transforms as transforms
+
 from matplotlib import pyplot as plt
 from pytorch_grad_cam import GradCAMPlusPlus, GradCAM, EigenCAM, ScoreCAM, AblationCAM, LayerCAM, FullGrad
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from torchvision.transforms import ToTensor
+
 #from models.swintransformer import SwinTransformerFineTuning
 from models.airbnb_swintransformer import SwinTransformerFineTuning
 from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
@@ -35,7 +38,7 @@ original_forward = model.forward_ig
 
 def forward_wrapper(x):
     y = original_forward(x)
-    return y['country_hat']
+    return y['subregion_hat']
 model.forward=forward_wrapper
 
 target_layer = [model.pretrained.layers[-1].blocks[-1].norm1] #così è come suggerisce nel paper
@@ -44,11 +47,11 @@ target_layer = [model.pretrained.layers[-1].blocks[-1].norm1] #così è come sug
 
 cam = GradCAM(model=model.pretrained, target_layers=target_layer, reshape_transform=reshape_transform)# reshape_transform=reshape_transform)
 
-#rgb_img = cv2.imread(IMG_DIR/"expedia/51098/6969621.jpg")[:, :, ::-1]
-#rgb_img = cv2.imread(AIRBNB_IMG_DIR/"porto/porto_152.jpg")[:, :, ::-1] #decommenta, ho commentato solo per fare inferenza su immagine segmentata
-rgb_img = cv2.imread("/hdd2/past_students/virginia/airbnb/images/porto/porto_152.jpg")
+#rgb_img = cv2.imread(IMG_DIR/"expedia/7877/7407969.jpg")[:, :, ::-1]
+rgb_img = cv2.imread(AIRBNB_IMG_DIR/"rio/rio_720.jpg")[:, :, ::-1] #decommenta, ho commentato solo per fare inferenza su immagine segmentata
+#rgb_img = cv2.imread("/hdd2/past_students/virginia/airbnb/images/rio/rio_720.jpg")[:, :, ::-1]
 #rgb_img = cv2.imread("/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/bosphorus.jpg")
-#rgb_img = cv2.imread(IMG_DIR/"traffickcam/501/3834110.jpg")[:, :, ::-1]
+#rgb_img = cv2.imread(IMG_DIR/"traffickcam/1848/2699570.jpg")[:, :, ::-1]
 #devi mettere il -1 per passare da BGR a RGB
 rgb_img = cv2.resize(rgb_img, (224, 224))
 rgb_img = np.float32(rgb_img) / 255
@@ -58,7 +61,7 @@ input_tensor = preprocess_image(rgb_img, mean=[0.485, 0.456, 0.406],
 input_tensor = input_tensor
 
 print(input_tensor.shape)
-targets = [ClassifierOutputTarget(32)]
+targets = [ClassifierOutputTarget(12)]
 input_tensor.requires_grad_(True)
 cam.batch_size = 1  #poi decommenta con reshape_transform
 grayscale_cam = cam(input_tensor=input_tensor,
@@ -72,7 +75,7 @@ print(grayscale_cam)
 cam_image = show_cam_on_image(rgb_img, grayscale_cam)
 directory = Path('/home/rozenberg/indoors_geolocation_pycharm/gradCAM_images')
 os.chdir(directory)
-cv2.imwrite('Sergio_152.jpg', cam_image)
+cv2.imwrite('rio_720_subregion.jpg', cam_image)
 plt.imshow(grayscale_cam, alpha=0.5, cmap='plasma') #senza cmap è più tradizionale come visual
 plt.show()
-plt.savefig('/home/rozenberg/indoors_geolocation_pycharm/gradCAM_images/prova.jpeg')
+#plt.savefig('/home/rozenberg/indoors_geolocation_pycharm/gradCAM_images/rome_400_cam.jpeg')

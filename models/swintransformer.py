@@ -18,12 +18,12 @@ class SwinTransformerFineTuning(
         self.lr = 1e-4 #prova con 1e-6
         self.p_dropout = 0.5 #poi rimetti a 0.5
         self.save_hyperparameters()
-        with open('../pretrained_models/swin_transformer/configs/swin_base_patch4_window7_224.yaml') as f:
+        with open('pretrained_models/swin_transformer/configs/swin_base_patch4_window7_224.yaml') as f:
             model_config = yaml.safe_load(f)
             model_config = model_config['MODEL']['SWIN']
             model_config = {k.lower(): v for k, v in model_config.items()}
         self.pretrained = swin_transformer.SwinTransformer(**model_config, num_classes=21841)
-        self.pretrained_path = '../pretrained_models/swin_base_patch4_window7_224_22k.pth'
+        self.pretrained_path = 'pretrained_models/swin_base_patch4_window7_224_22k.pth'
         self.pretrained.load_state_dict(torch.load(self.pretrained_path, device_pretrained)[
                                             'model']) #se vuoi usare per ig, metti 'cpu' al posto di device pretrained, load me lo carica come un dizionario e poi con load_state_dict lo applico al modello pretrained
         self.pretrained.eval()
@@ -39,8 +39,8 @@ class SwinTransformerFineTuning(
         )
         self.subregion_predictor = nn.Linear(500, subregion_classes) #ultimo modello usa 21841
         self.country_predictor = nn.Linear(500, country_classes)  #ultimo modello usa 21841
-        #self.city_predictor = nn.Linear(500, city_classes) #21841
-        self.city_predictor = nn.Linear(21841, city_classes)
+        self.city_predictor = nn.Linear(500, city_classes) #21841
+        #self.city_predictor = nn.Linear(21841, city_classes)
         self.chain_predictor = nn.Linear(500, chain_classes)
         self.test_avg_top_1_accuracy_chain = MeanMetric()
         self.test_avg_top_1_accuracy_city = MeanMetric()
@@ -63,8 +63,8 @@ class SwinTransformerFineTuning(
         chain_hat = self.chain_predictor(output) #lascia output
         subregion_hat = self.subregion_predictor(output) #l'ultimo modello che stai lanciando ha swin_output
         country_hat = self.country_predictor(output) #l'ultimo modello che stai lanciando ha swin_output
-        city_hat = self.city_predictor(swin_output)
-        #city_hat = self.city_predictor(output) #se ci metti swin_output invece di output non ci mette gli hidden layers
+        #city_hat = self.city_predictor(swin_output)
+        city_hat = self.city_predictor(output) #se ci metti swin_output invece di output non ci mette gli hidden layers
         return dict(chain_hat=chain_hat, subregion_hat=subregion_hat, country_hat=country_hat,city_hat=city_hat) #,city_hat=city_hat)
 
 
@@ -150,17 +150,17 @@ class SwinTransformerFineTuning(
 
     def test_step(self, batch, batch_idx) -> Optional[STEP_OUTPUT]:
         output = self._full_pred_step(batch, batch_idx)
-        y_pred_chain = output['y_pred_chain'].argsort(descending=True)
+        #y_pred_chain = output['y_pred_chain'].argsort(descending=True)
         y_pred_country = output['y_pred_country'].argsort(descending=True)
         y_pred_city = output['y_pred_city'].argsort(descending=True)
         y_pred_subregion = output['y_pred_subregion'].argsort(descending=True)
-        chain_top_one_accuracy = (y_pred_chain[:, 0] == output['y_chain']).float().mean().item()
+        #chain_top_one_accuracy = (y_pred_chain[:, 0] == output['y_chain']).float().mean().item()
         country_top_one_accuracy = (y_pred_country[:, 0] == output['y_country']).float().mean().item()
         city_top_one_accuracy = (y_pred_city[:, 0] == output['y_city']).float().mean().item()
         subregion_top_one_accuracy = (y_pred_subregion[:, 0] == output['y_subregion']).float().mean().item()
-        chain_top_five_accuracy = [output['y_chain'][i] in y_pred_chain[i, :5] for i in
-                                     range(len(y_pred_chain))]
-        chain_top_five_accuracy = sum(chain_top_five_accuracy) / len(chain_top_five_accuracy)
+        #chain_top_five_accuracy = [output['y_chain'][i] in y_pred_chain[i, :5] for i in
+        #                             range(len(y_pred_chain))]
+        #chain_top_five_accuracy = sum(chain_top_five_accuracy) / len(chain_top_five_accuracy)
         country_top_five_accuracy = [output['y_country'][i] in y_pred_country[i, :5] for i in
                                      range(len(y_pred_country))]
         country_top_five_accuracy = sum(country_top_five_accuracy) / len(country_top_five_accuracy)
@@ -172,9 +172,9 @@ class SwinTransformerFineTuning(
                                        for i in range(len(y_pred_subregion))]
         subregion_top_five_accuracy = sum(subregion_top_five_accuracy) / len(subregion_top_five_accuracy)
 
-        chain_top_ten_accuracy = [output['y_chain'][i] in y_pred_chain[i, :10] for i in
-                                    range(len(y_pred_chain))]
-        chain_top_ten_accuracy = sum(chain_top_ten_accuracy) / len(chain_top_ten_accuracy)
+        #chain_top_ten_accuracy = [output['y_chain'][i] in y_pred_chain[i, :10] for i in
+        #                            range(len(y_pred_chain))]
+        #chain_top_ten_accuracy = sum(chain_top_ten_accuracy) / len(chain_top_ten_accuracy)
 
         country_top_ten_accuracy = [output['y_country'][i] in y_pred_country[i, :10] for i in
                                      range(len(y_pred_country))]
@@ -187,27 +187,27 @@ class SwinTransformerFineTuning(
                                        for i in range(len(y_pred_subregion))]
         subregion_top_ten_accuracy = sum(subregion_top_ten_accuracy) / len(subregion_top_ten_accuracy)
         self.log('test/loss', output['loss'])
-        self.log('test/chain_top_ten_accuracy', chain_top_ten_accuracy)
+        #self.log('test/chain_top_ten_accuracy', chain_top_ten_accuracy)
         self.log('test/country_top_ten_accuracy', country_top_ten_accuracy)
         self.log('test/city_top_ten_accuracy', city_top_ten_accuracy)
         self.log('test/subregion_top_ten_accuracy', subregion_top_ten_accuracy)
         self.log('test/country_top_five_accuracy', country_top_five_accuracy)
-        self.log('test/chain_top_five_accuracy', chain_top_five_accuracy)
+        #self.log('test/chain_top_five_accuracy', chain_top_five_accuracy)
         self.log('test/city_top_five_accuracy', city_top_five_accuracy)
         self.log('test/subregion_top_five_accuracy', subregion_top_five_accuracy)
         self.log('test/country_top_one_accuracy', country_top_one_accuracy)
-        self.log('test/chain_top_one_accuracy', chain_top_one_accuracy)
+        #self.log('test/chain_top_one_accuracy', chain_top_one_accuracy)
         self.log('test/city_top_one_accuracy', city_top_one_accuracy)
         self.log('test/subregion_top_one_accuracy', subregion_top_one_accuracy)
-        self.test_avg_top_1_accuracy_chain.update(chain_top_one_accuracy)
+        #self.test_avg_top_1_accuracy_chain.update(chain_top_one_accuracy)
         self.test_avg_top_1_accuracy_city.update(city_top_one_accuracy)
         self.test_avg_top_1_accuracy_country.update(country_top_one_accuracy)
         self.test_avg_top_1_accuracy_subregion.update(subregion_top_one_accuracy)
-        self.test_avg_top_5_accuracy_chain.update(chain_top_five_accuracy)
+        #self.test_avg_top_5_accuracy_chain.update(chain_top_five_accuracy)
         self.test_avg_top_5_accuracy_city.update(city_top_five_accuracy)
         self.test_avg_top_5_accuracy_country.update(country_top_five_accuracy)
         self.test_avg_top_5_accuracy_subregion.update(subregion_top_five_accuracy)
-        self.test_avg_top_10_accuracy_chain.update(chain_top_ten_accuracy)
+        #self.test_avg_top_10_accuracy_chain.update(chain_top_ten_accuracy)
         self.test_avg_top_10_accuracy_city.update(city_top_ten_accuracy)
         self.test_avg_top_10_accuracy_country.update(country_top_ten_accuracy)
         self.test_avg_top_10_accuracy_subregion.update(subregion_top_ten_accuracy)

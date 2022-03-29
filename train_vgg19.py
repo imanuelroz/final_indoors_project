@@ -11,7 +11,7 @@ import argparse
 
 #root = Path(__file__).parent #__file__ mi da il percorso del file (mentre __name__ mi da il nome del file)
 root = Path('/hdd2/indoors_geolocation_weights/vgg19')
-run_folder = root/'run'
+run_folder = root/'run_500_freezed'
 if not run_folder.exists():
     run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
 

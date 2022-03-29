@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 #from models.swintransformer import SwinTransformerFineTuning
 from models.swintransformerade20k import SwinTransformerFineTuningADE20k
 from models.swin_b import Swin_b_TransformerFineTuning
+from models.swin_t import Swin_t_TransformerFineTuning
 from datasets.hotel50k import Hotelimages
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
@@ -14,7 +15,7 @@ import matplotlib.pyplot as plt
 
 #root = Path(__file__).parent #__file__ mi da il percorso del file (mentre __name__ mi da il nome del file)
 root = Path('/hdd2/indoors_geolocation_weights')
-run_folder = root/'swin_b'
+run_folder = root/'swin_t'
 if not run_folder.exists():
     run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
 
@@ -55,7 +56,8 @@ def main():
     valid_dl = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     #model = SwinTransformerFineTuning()
     #model = SwinTransformerFineTuningADE20k(device_pretrained='cpu')
-    model = Swin_b_TransformerFineTuning()
+    #model = Swin_b_TransformerFineTuning()
+    model = Swin_t_TransformerFineTuning()
     model_checkpoint = ModelCheckpoint(exp_folder, monitor="val_epoch_loss", save_last=True, save_top_k=2,
                                        filename='model_{val_epoch_loss:.2f}', save_weights_only=False, every_n_epochs=1)
     model_es = EarlyStopping(monitor="val_epoch_loss")
@@ -70,9 +72,9 @@ def main():
     #model.hparams.lr = new_lr
     #print(f'Auto-find model LR: {model.hparams.lr}')
 
-    trainer.fit(model, train_dl, valid_dl)
-    #new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'3/model_val_epoch_loss=9.72.ckpt')
-    #trainer.fit(new_model, train_dl, valid_dl)
+    #trainer.fit(model, train_dl, valid_dl)
+    new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'4/model_val_epoch_loss=11.71.ckpt')
+    trainer.fit(new_model, train_dl, valid_dl)
 if __name__ == '__main__':    #__name__ è una variabile speciale che di solito contiene il nome del file
      main()                         # in questo caso contiene __main__ che è il punto di partenza
 

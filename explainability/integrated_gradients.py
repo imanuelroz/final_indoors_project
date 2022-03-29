@@ -1,7 +1,7 @@
 import torch
 from matplotlib import pyplot as plt
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
-
+#from models.swintransformerade20k import SwinTransformerFineTuningADE20k
 from models.airbnb_swinde20k import SwinTransformerFineTuningADE20k
 from models.swintransformer import SwinTransformerFineTuning
 #from models.airbnb_swintransformer import SwinTransformerFineTuning
@@ -26,24 +26,25 @@ ROOT_AIRBNB_DIR = Path('/hdd2/past_students/virginia/airbnb/')
 AIRBNB_IMG_DIR = ROOT_AIRBNB_DIR / "images"
 
 
-#data = Airbnbimages('train')
-data = Hotelimages('train')
+data = Airbnbimages('train')
+#data = Hotelimages('train')
 dl = DataLoader(data, batch_size=16) #al posto di dl metti img=dataset[0], togli sample = next..., ind = 0 non serve più
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/2/model_val_epoch_loss=10.04.ckpt', device_pretrained='cpu').eval()
-#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.16.ckpt', device_pretrained='cpu')
-#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt', device_pretrained='cpu')
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/2/model_val_epoch_loss=10.04.ckpt', device_pretrained='cpu').eval()
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.16.ckpt', device_pretrained='cpu').eval()
+#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/indoors_geolocation_weights/swin_b/43/model_val_epoch_loss=11.60.ckpt', device_pretrained='cpu').eval()
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt', device_pretrained='cpu').eval()
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.63.ckpt', device_pretrained='cpu').eval()
-#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swindade20k/1/model_val_epoch_loss=6.20.ckpt', device_pretrained='cpu').eval()
-target_layer = [model.subregion_predictor, model.country_predictor, model.city_predictor]
-#target_airbnb_layer = [model.subregion_predictor, model.country_predictor, model.location_predictor]
+model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swindade20k/1/model_val_epoch_loss=6.20.ckpt', device_pretrained='cpu').eval()
+#target_layer = [model.subregion_predictor, model.country_predictor, model.city_predictor]
+target_airbnb_layer = [model.subregion_predictor, model.country_predictor, model.location_predictor]
 
 #sample = next(iter(dl)) #next fa iterazioni su iter iteratore
 #sample = data.dataset['image_id']
 #print(sample)
-#index = data.dataset.index[data.dataset['image_id'] == 'sicily_59'][0]
+index = data.dataset.index[data.dataset['image_id'] == 'porto_152'][0]
 #element = data.dataset.loc[data.dataset['image_id'] == 'bergamo_7']
 #element = data.dataset.loc[data.dataset['image_id'] == 6549605]
-index = data.dataset.index[data.dataset['image_id'] == 2699570][0]
+#index = data.dataset.index[data.dataset['image_id'] == 6985480][0]
 #index = data.dataset.loc['image_id' == '3834110']
 print(index)
 sample = data[index]
@@ -52,14 +53,14 @@ ind = 0
 def attribute_image_features(algorithm, input, **kwargs):
     model.zero_grad()
     tensor_attributions = algorithm.attribute(input,
-                                              target=sample['y_city'],
+                                              target=sample['y_location'],
                                               **kwargs
                                               )
 
     return tensor_attributions
 
 
-ig = IntegratedGradients(lambda x: model.forward_ig(x)['city_hat'])
+ig = IntegratedGradients(lambda x: model.forward_ig(x)['location_hat'])
 #ig = GradientShap(lambda x: model.forward_ig(x)['subregion_hat'])
 #ig = Saliency(lambda x: model.forward_ig(x)['country_hat'])
 input = sample['image'].unsqueeze(0) #con index
@@ -79,8 +80,8 @@ fig_orig, axes_orig = viz.visualize_image_attr(None, original_image,
 
 fig_ig, axes_ig = viz.visualize_image_attr(attr_ig, original_image, method="blended_heat_map", sign="absolute_value",
                          show_colorbar=True, title="Overlayed Integrated Gradients", cmap='plasma')
-fig_orig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/2699570.png')
-fig_ig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/ig_2699570_city.png')
+fig_orig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/porto_152.png')
+fig_ig.savefig('/home/rozenberg/indoors_geolocation_pycharm/integrated_gradients/ig_porto_152_city.png')
 
 #plt.close()
 #plt.imshow(original_image)

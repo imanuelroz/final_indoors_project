@@ -47,10 +47,9 @@ def main():
     new_lr = lr_finder.suggestion()
     model.hparams.lr = new_lr
     print(f'Auto-find model LR: {model.hparams.lr}')
-
-    trainer.fit(model, train_dl, valid_dl)
-    #new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'1/model_epoch=14.ckpt')
-    #trainer.fit(new_model, train_dl, valid_dl)
+    #trainer.fit(model, train_dl, valid_dl)
+    new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'0/model_val_epoch_loss=4.62.ckpt')
+    trainer.fit(new_model, train_dl, valid_dl)
 
 if __name__ == '__main__':
      main()

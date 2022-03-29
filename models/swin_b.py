@@ -19,7 +19,7 @@ class Swin_b_TransformerFineTuning(
                  country_classes=183, chain_classes=94, device_pretrained=None):  #chain_classes=94
         super().__init__()
         self.lr = 1e-6
-        self.p_dropout = 0.1 #poi rimetti a 0.5
+        self.p_dropout = 0.5 #poi rimetti a 0.5
         self.save_hyperparameters()
         with open('pretrained_models/swin_transformer/configs/swin_base_patch4_window7_224.yaml') as f:
             model_config = yaml.safe_load(f)
@@ -40,15 +40,15 @@ class Swin_b_TransformerFineTuning(
         self.city_classes = city_classes
         self.dropout = nn.Dropout(self.p_dropout)
         self.finetuner = nn.Sequential(
-            nn.Linear(50176, 1000),   #oppure se non commenti average pooling 1024
+            nn.Linear(50176, 500),   #oppure se non commenti average pooling 1024
             nn.ReLU(),
-            nn.Linear(1000, 1000),
+            nn.Linear(500, 500),
         )
-        self.subregion_predictor = nn.Linear(1000, subregion_classes) #ultimo modello usa 21841
-        self.country_predictor = nn.Linear(1000, country_classes)  #ultimo modello usa 21841
-        self.city_predictor = nn.Linear(1000, city_classes) #21841
+        self.subregion_predictor = nn.Linear(500, subregion_classes) #ultimo modello usa 21841
+        self.country_predictor = nn.Linear(500, country_classes)  #ultimo modello usa 21841
+        self.city_predictor = nn.Linear(500, city_classes) #21841
         #self.city_predictor = nn.Linear(37632, city_classes)
-        self.chain_predictor = nn.Linear(1000, chain_classes)
+        self.chain_predictor = nn.Linear(500, chain_classes)
         self.test_avg_top_1_accuracy_chain = MeanMetric()
         self.test_avg_top_1_accuracy_city = MeanMetric()
         self.test_avg_top_1_accuracy_country = MeanMetric()
@@ -88,7 +88,7 @@ class Swin_b_TransformerFineTuning(
         country_hat = self.country_predictor(output)
         #city_hat = self.city_predictor(swin_output)
         city_hat = self.city_predictor(output) #se ci metti swin_output invece di output non ci mette gli hidden layers
-        return dict(subregion_hat=subregion_hat, country_hat=country_hat,city_hat=city_hat, chain_hat=chain_hat)
+        return dict(subregion_hat=subregion_hat, country_hat=country_hat, city_hat=city_hat, chain_hat=chain_hat)
 
 
     def training_step(self, batch, batch_idx):
@@ -122,7 +122,7 @@ class Swin_b_TransformerFineTuning(
         loss_values += F.cross_entropy(y_pred['city_hat'], y_city)
         loss_values += F.cross_entropy(y_pred['subregion_hat'], y_subregion)
         return dict(loss=loss_values, y_pred_country=y_pred['country_hat'],
-                    y_pred_subregion=y_pred['subregion_hat'], y_pred_city=y_pred['city_hat'], **batch)  # aggiungi , y_pred_chain=y_pred['chain_hat'] mi spalma anche il batch dentro il dizionario
+                    y_pred_subregion=y_pred['subregion_hat'], y_pred_city=y_pred['city_hat'], y_pred_chain=y_pred['chain_hat'], **batch)  # aggiungi , y_pred_chain=y_pred['chain_hat'] mi spalma anche il batch dentro il dizionario
 
     def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
         self.log('train/batch_loss', outputs['loss'].item(), on_step=True) #prog_bar=True

@@ -38,7 +38,7 @@ IMG_DIR = ROOT_DIR / "images"
 AIRBNB_DATA_DIR = ROOT_DIR / "airbnb_data"
 LOCAL_DATA_DIR = Path(__file__).parent.parent/'data'
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/0/model_val_epoch_loss=5.14.ckpt').eval()
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/19/model_val_epoch_loss=6.05.ckpt').eval()
+model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/19/model_val_epoch_loss=6.05.ckpt', device_pretrained = 'cpu').eval()
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.63.ckpt').eval()
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/indoors_geolocation_weights/swinADE20k/4/model_val_epoch_loss=9.53.ckpt').eval()
@@ -48,8 +48,15 @@ model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation
 subregion_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/subregion_id.csv', index_col='subregion_id')
 #country_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/country_id.csv', index_col='Id')
 #location_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/location_id.csv', index_col='location_id')
-img = image.load_img(ROOT_DIR/"images/venice/venice_263.jpg", target_size=(224, 224))
+img = image.load_img(ROOT_DIR/"images/rio/rio_720.jpg", target_size=(224, 224))
 img_orig = image.img_to_array(img)
+
+#if we want to use slic instead of segmented image
+
+#segments_slic = slic(img, n_segments=100, compactness=30, sigma=3)
+#plt.imshow(segments_slic)
+#plt.show()
+#plt.axis('off')
 
 
 #img = image.load_img(ROOT_DIR/"images/expedia/1160/2940274.jpg", target_size=(224, 224))
@@ -58,7 +65,7 @@ img_orig = image.img_to_array(img)
 #sgm_img = image.img_to_array(sgm)
 
 #sgm_dict = torch.load('/home/rozenberg/indoors_geolocation_pycharm/segmented_indoor_scenes/2940274.pth')
-sgm_dict = inS.modelSegmentation(0, "venice", 263)
+sgm_dict = inS.modelSegmentation(0, "rio", 720)
 sgm_img_rgb = sgm_dict[1]
 #print(type(sgm_img_rgb))
 
@@ -199,10 +206,10 @@ for i in range(3):
     print(subregion_ids)
     print(subregion_ids.loc[inds[i].item(), 'subregion'])
     axes[i+1].set_title(subregion_ids.loc[inds[i].item(), 'subregion'])
-    axes[i+1].imshow(np.array(img.convert('LA'))[:, :, 0], alpha=0.15)
-    im = axes[i+1].imshow(m, cmap='viridis', vmin=-max_val, vmax=max_val)
+    axes[i+1].imshow(np.array(img.convert('LA'))[:, :, 0], alpha=0.9) #era 0.15
+    im = axes[i+1].imshow(m, cmap='viridis', vmin=-max_val, vmax=max_val, alpha=0.8)
     axes[i+1].axis('off')
 cb = fig.colorbar(im, ax=axes.ravel().tolist(), label="SHAP value", orientation="horizontal", aspect=60)
 cb.outline.set_visible(False)
+#plt.savefig('/home/rozenberg/indoors_geolocation_pycharm/rio_720_shap.jpg')
 plt.show()
-#plt.savefig('Immagine_da_usare.jpg', dpi = 200)
