@@ -14,7 +14,7 @@ import numpy as np
 root = Path('/hdd2/indoors_geolocation_weights/efficientnet')
 run_folder = root/'run'
 if not run_folder.exists():
-    run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
+    run_folder.mkdir()
 
 def get_experiment_folder():
     i = 0
@@ -40,7 +40,7 @@ def main():
     #_ = plt.hist(target_list.numpy(), bins)
     #plt.show()
     #city_freq = np.asarray(city_freq.tolist())
-    weights = torch.tensor(np.true_divide(c, np.sum(c))) #perchè sum e non len
+    weights = torch.tensor(np.true_divide(c, np.sum(c)))
     class_weights_all = weights[target_list]
     #weights = train_dataset.dataset.subregion_id.apply(lambda x: 1/subregion_freq[x]).tolist()
     valid_dataset = Hotelimages(split='valid')
@@ -61,5 +61,5 @@ def main():
     #new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'1/model_epoch=14.ckpt')
     #trainer.fit(new_model, train_dl, valid_dl)
 
-if __name__ == '__main__':    #__name__ è una variabile speciale che di solito contiene il nome del file
+if __name__ == '__main__':
      main()

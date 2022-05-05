@@ -48,11 +48,11 @@ class SwinTransformerFineTuning(
         self.finetuner = nn.Sequential(
             nn.Linear(21841, 1000),
             nn.ReLU(),
-            nn.Linear(1000, 1000), #1000, 500
+            nn.Linear(1000, 500), #1000, 500
         )
-        self.subregion_predictor = nn.Linear(1000, subregion_classes)
-        self.country_predictor = nn.Linear(1000, country_classes)
-        self.location_predictor = nn.Linear(1000, location_classes)
+        self.subregion_predictor = nn.Linear(500, subregion_classes)
+        self.country_predictor = nn.Linear(500, country_classes)
+        self.location_predictor = nn.Linear(500, location_classes)
         self.test_avg_top_1_accuracy_location = MeanMetric()
         self.test_avg_top_1_accuracy_country = MeanMetric()
         self.test_avg_top_1_accuracy_subregion = MeanMetric()

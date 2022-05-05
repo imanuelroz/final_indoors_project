@@ -43,7 +43,7 @@ def main():
     #_ = plt.hist(target_list.numpy(), bins)
     #plt.show()
     #city_freq = np.asarray(city_freq.tolist())
-    weights = torch.tensor(np.true_divide(c, np.sum(c))) #perchè sum e non len
+    weights = torch.tensor(np.true_divide(c, np.sum(c))) # sum e non len
     class_weights_all = weights[target_list]
     #weights = train_dataset.dataset.subregion_id.apply(lambda x: 1/subregion_freq[x]).tolist()
     valid_dataset = Hotelimages(split='valid')
@@ -75,6 +75,6 @@ def main():
     #trainer.fit(model, train_dl, valid_dl)
     new_model = model.load_from_checkpoint(checkpoint_path=run_folder/'4/model_val_epoch_loss=11.71.ckpt')
     trainer.fit(new_model, train_dl, valid_dl)
-if __name__ == '__main__':    #__name__ è una variabile speciale che di solito contiene il nome del file
-     main()                         # in questo caso contiene __main__ che è il punto di partenza
+if __name__ == '__main__':
+     main()
 

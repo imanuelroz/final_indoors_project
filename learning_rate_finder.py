@@ -38,13 +38,13 @@ def main():
     c, _ = np.histogram(target_list.numpy(), bins=np.arange(0, country_classes + 1)) #put bins instead of _ if you want the plot
     #_ = plt.hist(target_list.numpy(), bins)
     #plt.show()
-    weights = torch.tensor(np.true_divide(c, np.sum(c))) #perchè sum e non len
+    weights = torch.tensor(np.true_divide(c, np.sum(c))) #usa sum invece di len
     class_weights_all = weights[target_list]
     #weights = train_dataset.dataset.subregion_id.apply(lambda x: 1/subregion_freq[x]).tolist()
     valid_dataset = Hotelimages(split='valid')
     batch_size = 16
     train_dataset_sampler = torch.utils.data.WeightedRandomSampler(weights=class_weights_all, num_samples=len(train_dataset),
-                                                                   replacement=False) #prima era train_dataset il primo argomento
+                                                                   replacement=False)
     train_dl = DataLoader(train_dataset, batch_size=batch_size, shuffle=False, sampler=train_dataset_sampler)
     #valid_dataset_sampler = torch.utils.data.RandomSampler(valid_dataset, replacement=False) #metti dentro anche num_samples=1600 e replacement=True
     #valid_dl = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, sampler=valid_dataset_sampler)

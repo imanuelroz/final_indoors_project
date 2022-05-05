@@ -30,7 +30,7 @@ model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.63.ckpt').eval()
 #model = Swin_b_TransformerFineTuning.load_from_checkpoint(args.run_path)
-#model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)  # statt accuort ha da fa aaccussi senno vedi linea 34
+#model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)
 #model = EfficientNet_FineTuning.load_from_checkpoint(args.run_path)
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
 trainer = pl.Trainer(precision=16,

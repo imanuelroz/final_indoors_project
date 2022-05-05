@@ -28,10 +28,10 @@ batch_size = 16  # metti 16 poi
 #test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, sampler=test_dataset_sampler) #poi rimetti shuffle True
 test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 #model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/run/19/model_val_epoch_loss=6.05.ckpt').eval().cuda() #.cuda() per mandare in gpu
-model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/best_lr_rate/2/model_val_epoch_loss=4.21.ckpt').eval().cuda()#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/indoors_geolocation_weights/run/3/model_val_epoch_loss=9.17.ckpt').eval()
-#model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.63.ckpt').eval()
+#model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/best_lr_rate/2/model_val_epoch_loss=4.21.ckpt').eval().cuda()
+model = SwinTransformerFineTuningADE20k.load_from_checkpoint('/hdd2/airbnb_geolocation_weights/swinade20k/unfreezed/3/model_val_epoch_loss=4.56.ckpt').eval().cuda()
 #model = Swin_b_TransformerFineTuning.load_from_checkpoint(args.run_path)
-#model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)  # statt accuort ha da fa aaccussi senno vedi linea 34
+#model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)
 #model = EfficientNet_FineTuning.load_from_checkpoint(args.run_path)
 #model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
 trainer = pl.Trainer(precision=16,

@@ -27,7 +27,7 @@ def main():
     test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     model = SwinTransformerFineTuning.load_from_checkpoint(args.run_path)
     #model = SwinTransformerFineTuningADE20k.load_from_checkpoint(args.run_path)
-    #model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)  # statt accuort ha da fa aaccussi senno vedi linea 34
+    #model = Vgg_19_FineTuning.load_from_checkpoint(args.run_path)
     trainer = pl.Trainer(precision=16, default_root_dir=args.run_path.parent,
                          max_epochs=10, accelerator='gpu', devices=1, max_steps=100)
     # model.load_from_checkpoint(args.run_path)

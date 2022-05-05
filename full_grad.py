@@ -45,7 +45,7 @@ target_layer = [model.pretrained.layers[-1].blocks[-1].norm1] #così è come sug
 
 #target_layer = [model.country_predictor]# model.country_predictor, model.city_predictor]
 
-cam = GradCAM(model=model.pretrained, target_layers=target_layer, reshape_transform=reshape_transform)# reshape_transform=reshape_transform)
+cam = GradCAM(model=model.pretrained, target_layers=target_layer, reshape_transform=reshape_transform)
 
 #rgb_img = cv2.imread(IMG_DIR/"expedia/7877/7407969.jpg")[:, :, ::-1]
 rgb_img = cv2.imread(AIRBNB_IMG_DIR/"rio/rio_720.jpg")[:, :, ::-1] #decommenta, ho commentato solo per fare inferenza su immagine segmentata

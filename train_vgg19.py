@@ -13,7 +13,7 @@ import argparse
 root = Path('/hdd2/indoors_geolocation_weights/vgg19')
 run_folder = root/'run_500_freezed'
 if not run_folder.exists():
-    run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
+    run_folder.mkdir()
 
 def get_experiment_folder():
     i = 0

@@ -45,9 +45,9 @@ model = SwinTransformerFineTuning.load_from_checkpoint('/hdd2/airbnb_geolocation
 # Download human-readable labels for ImageNet.
 
 
-subregion_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/subregion_id.csv', index_col='subregion_id')
+#subregion_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/subregion_id.csv', index_col='subregion_id')
 #country_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/country_id.csv', index_col='Id')
-#location_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/location_id.csv', index_col='location_id')
+location_ids = pd.read_csv('/hdd2/past_students/virginia/airbnb/airbnb_data/location_id.csv', index_col='Id')
 img = image.load_img(ROOT_DIR/"images/rio/rio_720.jpg", target_size=(224, 224))
 img_orig = image.img_to_array(img)
 
@@ -151,7 +151,7 @@ def mask_image(zs, segmentation, image, background=None):
 
 @torch.no_grad() #per non tenere in memoria tutti ir isultati intermedi dei layer
 def f(z):
-    prediction = model(mask_image(z, slic_style_mask, img_orig, 255))['subregion_hat'].softmax(dim=-1) #sgm_img anziche slic_style_mask
+    prediction = model(mask_image(z, slic_style_mask, img_orig, 255))['location_hat'].softmax(dim=-1) #sgm_img anziche slic_style_mask
     #print(prediction)
     return prediction.numpy()
     #return {location_ids.loc[i, 'location']: float(prediction[0, i]) for i in range(len(location_ids))}
@@ -171,7 +171,7 @@ plt.imshow(masked_images[0][0, :, :])
 plt.axis('off')
 plt.show()
 
-prediction = model((mask_image(torch.zeros(1, num_classes), slic_style_mask, img_orig, 255)))['subregion_hat'].softmax(dim=-1)
+prediction = model((mask_image(torch.zeros(1, num_classes), slic_style_mask, img_orig, 255)))['location_hat'].softmax(dim=-1)
 print(prediction)
 
 
@@ -186,7 +186,7 @@ with warnings.catch_warnings():
 img_orig_pytorch = torch.from_numpy(img_orig).unsqueeze(0)
 img_orig_pytorch = img_orig_pytorch.permute(0, 3, 1, 2)
 with torch.no_grad():
-    preds = model(img_orig_pytorch)['subregion_hat'].softmax(dim=-1)
+    preds = model(img_orig_pytorch)['location_hat'].softmax(dim=-1)
 top_preds = np.argsort(-preds)
 inds = top_preds[0]
 #top_10_pred = pd.Series(data={feature_names[str(inds[i])][1]:preds[0, inds[i]] for i in range(10)})
@@ -203,9 +203,9 @@ axes[0].axis('off')
 max_val = np.max([np.max(np.abs(shap_values[i][:, :-1])) for i in range(len(shap_values))])
 for i in range(3):
     m = fill_segmentation(shap_values[inds[i]][0], sgm_img)
-    print(subregion_ids)
-    print(subregion_ids.loc[inds[i].item(), 'subregion'])
-    axes[i+1].set_title(subregion_ids.loc[inds[i].item(), 'subregion'])
+    print(location_ids)
+    print(location_ids.loc[inds[i].item(), 'Location'])
+    axes[i+1].set_title(location_ids.loc[inds[i].item(), 'Location'])
     axes[i+1].imshow(np.array(img.convert('LA'))[:, :, 0], alpha=0.9) #era 0.15
     im = axes[i+1].imshow(m, cmap='viridis', vmin=-max_val, vmax=max_val, alpha=0.8)
     axes[i+1].axis('off')

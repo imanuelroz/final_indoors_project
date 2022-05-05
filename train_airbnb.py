@@ -12,7 +12,7 @@ from pytorch_lightning import seed_everything
 root = Path('/hdd2/airbnb_geolocation_weights')
 run_folder = root/'swinade20k/unfreezed/best_lr_rate'
 if not run_folder.exists():
-    run_folder.mkdir()       #lo fai così perchè se crei con mkdir una cartella che già esiste ti da errore
+    run_folder.mkdir()
 
 def get_experiment_folder():
     i = 0
